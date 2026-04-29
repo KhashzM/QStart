@@ -60,6 +60,8 @@
 - **本地应用程序快捷启动功能实现**
 - README 与系统方案整理
 
+<img width="787" height="451" alt="image" src="https://github.com/user-attachments/assets/9b0daa86-3244-42c7-970f-68c888ca29d2" />
+
 ---
 
 ### 🚧 开发中
