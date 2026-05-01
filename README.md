@@ -1,4 +1,4 @@
-# AI-Driven uTools-like Platform
+# AI-Driven Efficiency Tool Platform
 
 > 一个基于 AI Agent 的效率工具平台  
 > 从「手动选工具」升级为「AI自动完成任务」
@@ -7,7 +7,7 @@
 
 ## ✨ 项目简介
 
-本项目是一个类似 uTools 的桌面效率工具平台，并在此基础上引入 AI 调度能力，使系统能够：
+本项目是一个面效率工具平台，并在此基础上引入 AI 调度能力，使系统能够：
 
 - 理解用户自然语言指令
 - 自动匹配或组合工具（插件）
