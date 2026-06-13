@@ -1,0 +1,12 @@
+{
+    "name": "剪贴板历史",
+    "version": "2.0.0",
+    "description": "自动监听系统剪贴板，持久化存储记录，支持搜索和历史管理",
+    "author": "QStart",
+    "main_module": "clipboard_plugin.py",
+    "files": [
+        "clipboard_plugin.py",
+        "clipboard_dialog.py"
+    ],
+    "keywords": ["clip", "剪贴板", "history"]
+}

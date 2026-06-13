@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1781137424537",
+    "content": "pyinstaller --distpath ./dist src/QStart.spec",
+    "time_str": "2026-06-11 08:23:44",
+    "timestamp": 1781137424,
+    "length": 45
+  },
+  {
+    "id": "1781137398399",
+    "content": "file:///D:/Code/Python/项目/QStart_v2.0/src/plugins.zip",
+    "time_str": "2026-06-11 08:23:18",
+    "timestamp": 1781137398,
+    "length": 53
+  }
+]

@@ -1,0 +1,2 @@
+项目根目录执行：
+pyinstaller --distpath ./dist src/QStart.spec

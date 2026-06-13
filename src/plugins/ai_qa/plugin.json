@@ -1,0 +1,12 @@
+{
+    "name": "AI 问答",
+    "version": "2.0.0",
+    "description": "基于AI的智能问答插件，支持搜索和对话模式",
+    "author": "QStart",
+    "main_module": "ai_qa_plugin.py",
+    "files": [
+        "ai_qa_plugin.py",
+        "ai_chat_dialog.py"
+    ],
+    "keywords": ["ai", "chat", "问答", "搜索"]
+}

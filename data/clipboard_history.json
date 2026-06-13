@@ -1,0 +1,58 @@
+[
+  {
+    "id": "1777643881482",
+    "content": "- 启动 QStart 后自动开始监听剪贴板\n\n- 复制任何文本 → 自动记录\n\n- 输入 `clip` 按回车 → 打开历史窗口 → 点击记录复制 → Ctrl+V 粘贴\n\n- 重启软件后历史记录依然保留\n",
+    "time_str": "2026-05-01 21:58:01",
+    "timestamp": 1777643881,
+    "length": 104
+  },
+  {
+    "id": "1777643714990",
+    "content": "       quit_action = QAction(\"退出\", self.app)\n        quit_action.triggered.connect(self.quit_app)\n        tray_menu.addAction(quit_action)",
+    "time_str": "2026-05-01 21:55:14",
+    "timestamp": 1777643714,
+    "length": 138
+  },
+  {
+    "id": "1777643702937",
+    "content": "\n\n    def update_tray_tooltip(self, custom_text=None):\n        if custom_text:\n            self.tray_icon.setToolTip(f\"{APP_NAME} - {custom_text}\")\n            return\n        self.tray_icon.setToolTip(f\"{APP_NAME} - 按",
+    "time_str": "2026-05-01 21:55:02",
+    "timestamp": 1777643702,
+    "length": 217
+  },
+  {
+    "id": "1777643262621",
+    "content": "记录保存到 `data/clipboard_history.json`，重启软件/电脑不丢失\n",
+    "time_str": "2026-05-01 21:47:42",
+    "timestamp": 1777643262,
+    "length": 47
+  },
+  {
+    "id": "1777643259620",
+    "content": "- 启动 QStart 后自动开始监听剪贴板\n\n- 复制任何文本 → 自动记录\n\n- 输入 `clip` 按回车 → 打开历史窗口 → 点击记录复制 → Ctrl+V 粘贴\n\n- 重启软件后历史记录依然保留\n",
+    "time_str": "2026-05-01 21:47:39",
+    "timestamp": 1777643259,
+    "length": 104
+  },
+  {
+    "id": "1777643256591",
+    "content": "需要修改剪贴板插件：`clip` 时返回结果列表显示在主窗口内，`clip list` 才打开独立对话框。<tool_call>\n",
+    "time_str": "2026-05-01 21:47:36",
+    "timestamp": 1777643256,
+    "length": 65
+  },
+  {
+    "id": "1777643254572",
+    "content": "       quit_action = QAction(\"退出\", self.app)\n        quit_action.triggered.connect(self.quit_app)\n        tray_menu.addAction(quit_action)",
+    "time_str": "2026-05-01 21:47:34",
+    "timestamp": 1777643254,
+    "length": 138
+  },
+  {
+    "id": "1777643252539",
+    "content": "\n\n    def update_tray_tooltip(self, custom_text=None):\n        if custom_text:\n            self.tray_icon.setToolTip(f\"{APP_NAME} - {custom_text}\")\n            return\n        self.tray_icon.setToolTip(f\"{APP_NAME} - 按",
+    "time_str": "2026-05-01 21:47:32",
+    "timestamp": 1777643252,
+    "length": 217
+  }
+]

@@ -1,0 +1,11 @@
+{
+    "name": "大小写监测",
+    "version": "2.0.0",
+    "description": "监测大小写锁定和数字锁定状态",
+    "author": "QStart",
+    "main_module": "capslock_plugin.py",
+    "files": [
+        "capslock_plugin.py"
+    ],
+    "keywords": ["caps", "capslock", "大小写"]
+}

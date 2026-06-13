@@ -1,0 +1,11 @@
+{
+    "name": "计算器",
+    "version": "2.0.0",
+    "description": "内置计算器，支持基本数学运算",
+    "author": "QStart",
+    "main_module": "calc_plugin.py",
+    "files": [
+        "calc_plugin.py"
+    ],
+    "keywords": ["calc", "计算", "计算器"]
+}

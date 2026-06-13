@@ -1,0 +1,12 @@
+{
+    "name": "自定义热键",
+    "version": "2.0.0",
+    "description": "配置任意快捷键打开指定程序，热键触发时通过通知中心提示",
+    "author": "QStart",
+    "main_module": "custom_hotkeys_plugin.py",
+    "files": [
+        "custom_hotkeys_plugin.py",
+        "custom_hotkeys_dialog.py"
+    ],
+    "keywords": ["hk", "hotkey", "热键", "快捷键"]
+}

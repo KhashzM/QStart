@@ -1,0 +1,11 @@
+{
+    "name": "网页搜索",
+    "version": "2.0.0",
+    "description": "快速打开搜索引擎搜索关键词",
+    "author": "QStart",
+    "main_module": "web_search_plugin.py",
+    "files": [
+        "web_search_plugin.py"
+    ],
+    "keywords": ["search", "web", "搜索"]
+}

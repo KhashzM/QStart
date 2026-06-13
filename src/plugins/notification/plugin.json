@@ -1,0 +1,11 @@
+{
+    "name": "通知中心",
+    "version": "2.0.0",
+    "description": "系统通知中心，接收和管理插件通知",
+    "author": "QStart",
+    "main_module": "notification_plugin.py",
+    "files": [
+        "notification_plugin.py"
+    ],
+    "keywords": ["notify", "notification", "通知"]
+}
