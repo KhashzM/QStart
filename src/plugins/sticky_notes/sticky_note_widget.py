@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt, QPoint, QEvent
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QFont, QColor, QPainter, QPen
 from PyQt5.QtWidgets import (
     QTextEdit,
     QWidget,
@@ -129,12 +129,27 @@ class StickyNoteWidget(QWidget):
     def set_color(self, color):
         self._color = color
         self._apply_color()
-        self._save()
 
     def set_opacity(self, opacity):
         self._opacity = opacity
         self._apply_color()
-        self._save()
+
+    def paintEvent(self, event):
+        if not self._is_folded:
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.Antialiasing)
+
+            bg_color = QColor(self._color)
+            r, g, b = bg_color.red(), bg_color.green(), bg_color.blue()
+
+            brightness = (r * 299 + g * 587 + b * 114) / 1000
+            border_color = QColor("#333333") if brightness > 200 else QColor("#CCCCCC")
+
+            painter.setPen(QPen(border_color, 2))
+            painter.setBrush(Qt.NoBrush)
+            painter.drawRoundedRect(self.rect(), 10, 10)
+
+        super().paintEvent(event)
 
     def set_button_position(self, position):
         if self._button_position == position:

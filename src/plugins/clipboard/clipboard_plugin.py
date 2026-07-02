@@ -342,7 +342,7 @@ class ClipboardPlugin(PluginBase):
                 print(f"[{self.name}] 无法打开对话框：QApplication 未创建")
                 return
 
-            from plugins.clipboard_dialog import ClipboardDialog
+            from plugins.clipboard.clipboard_dialog import ClipboardDialog
 
             if self._dialog is None or not self._dialog.isVisible():
                 self._dialog = ClipboardDialog(self)

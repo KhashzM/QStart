@@ -32,6 +32,7 @@ QStart 是一个 Windows 效率工具平台，核心功能是 AI 驱动的快捷
 - **自定义热键** - 配置快捷键打开程序
 - **大小写监测** - Caps Lock 状态提示
 - **网页搜索** - 快速搜索引擎
+- **便签待办** - 桌面便签和待办事项管理
 
 ### 插件架构
 - 每个插件独立目录，包含 `plugin.json` 配置文件
@@ -57,6 +58,7 @@ QStart_v2.0/
 │   │   ├── clipboard/         # 剪贴板历史插件
 │   │   ├── custom_hotkeys/    # 自定义热键插件
 │   │   ├── notification/      # 通知中心插件
+│   │   ├── sticky_notes/      # 便签待办插件
 │   │   └── web_search/        # 网页搜索插件
 │   └── ...
 ├── data/                       # 数据存储
@@ -75,15 +77,21 @@ QStart_v2.0/
 - Python 3.12+
 - Windows 系统
 
-### 安装依赖
+### 下载预编译版本
+
+直接下载打包好的 EXE 程序：
+
+- 📦 [QStart.exe](https://github.com/yourusername/QStart/releases) - 最新稳定版
+
+下载后直接双击运行，无需安装 Python 环境。
+
+### 源码运行
 
 ```bash
+# 安装依赖
 pip install -r requirements.txt
-```
 
-### 运行程序
-
-```bash
+# 运行程序
 cd src
 python main.py
 ```
@@ -169,6 +177,8 @@ class MyPlugin(PluginBase):
 | `clip list` | 剪贴板历史 | 打开剪贴板历史窗口 |
 | `search 关键词` | 网页搜索 | 打开搜索引擎 |
 | `ai 问题` | AI 问答 | AI 智能问答 |
+| `note` | 便签待办 | 打开便签或待办管理 |
+| `todo add 事项` | 便签待办 | 添加待办事项 |
 
 ### 系统托盘
 

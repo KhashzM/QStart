@@ -209,7 +209,9 @@ class HotkeyItemWidget(QWidget):
         layout.setSpacing(10)
 
         # 图标
-        icon_label = QLabel("⌨️")
+        hotkey_type = hotkey_data.get("type", "app")
+        icon_text = "⚡" if hotkey_type == "command" else "⌨️"
+        icon_label = QLabel(icon_text)
         icon_label.setFixedSize(28, 28)
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setStyleSheet("""
@@ -230,13 +232,13 @@ class HotkeyItemWidget(QWidget):
         name_label.setStyleSheet("color: #333; font-size: 13px; font-weight: 500;")
         content_layout.addWidget(name_label)
 
-        hotkey_label = QLabel(f"热键: {hotkey_data.get('hotkey', '')}")
+        hotkey_label = QLabel(f"热键: {hotkey_data.get('hotkey', '')} | {'命令' if hotkey_type == 'command' else '程序'}")
         hotkey_label.setStyleSheet("color: #888; font-size: 11px;")
         content_layout.addWidget(hotkey_label)
 
         layout.addLayout(content_layout, 1)
 
-        # 路径预览（单行截断）
+        # 路径/命令预览（单行截断）
         path_preview = hotkey_data.get("path", "")
         path_label = QLabel()
         path_label.setStyleSheet("color: #666; font-size: 11px;")
@@ -291,7 +293,7 @@ class HotkeyEditDialog(QDialog):
         super().__init__(parent)
         self._data = hotkey_data or {}
         self.setWindowTitle("编辑热键" if hotkey_data else "添加热键")
-        self.setMinimumSize(460, 260)
+        self.setMinimumSize(460, 300)
         self._init_ui()
 
     def _init_ui(self):
@@ -299,13 +301,71 @@ class HotkeyEditDialog(QDialog):
         layout.setSpacing(16)
         layout.setContentsMargins(24, 24, 24, 24)
 
+        # 类型选择
+        type_label = QLabel("热键类型")
+        type_label.setStyleSheet("color: #333; font-size: 13px; font-weight: 500;")
+        layout.addWidget(type_label)
+
+        type_layout = QHBoxLayout()
+        type_layout.setSpacing(12)
+        
+        self.type_app_radio = QPushButton("🖥️ 启动程序")
+        self.type_app_radio.setCheckable(True)
+        self.type_app_radio.setStyleSheet("""
+            QPushButton {
+                background: white;
+                color: #333;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                padding: 8px 16px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            QPushButton:checked {
+                background: #4A90D9;
+                color: white;
+                border-color: #4A90D9;
+            }
+            QPushButton:hover { border-color: #4A90D9; }
+        """)
+        type_layout.addWidget(self.type_app_radio)
+        
+        self.type_command_radio = QPushButton("⚡ 插件命令")
+        self.type_command_radio.setCheckable(True)
+        self.type_command_radio.setStyleSheet("""
+            QPushButton {
+                background: white;
+                color: #333;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                padding: 8px 16px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+            QPushButton:checked {
+                background: #4A90D9;
+                color: white;
+                border-color: #4A90D9;
+            }
+            QPushButton:hover { border-color: #4A90D9; }
+        """)
+        type_layout.addWidget(self.type_command_radio)
+        layout.addLayout(type_layout)
+        
+        self.type_app_radio.clicked.connect(lambda: self._on_type_changed(True))
+        self.type_command_radio.clicked.connect(lambda: self._on_type_changed(False))
+        
+        hotkey_type = self._data.get("type", "app")
+        self.type_app_radio.setChecked(hotkey_type == "app")
+        self.type_command_radio.setChecked(hotkey_type == "command")
+
         # 程序名称
-        name_label = QLabel("程序名称")
+        name_label = QLabel("显示名称")
         name_label.setStyleSheet("color: #333; font-size: 13px; font-weight: 500;")
         layout.addWidget(name_label)
 
         self.name_input = QLineEdit()
-        self.name_input.setPlaceholderText("例如：记事本")
+        self.name_input.setPlaceholderText("例如：记事本 或 剪贴板历史")
         self.name_input.setText(self._data.get("name", ""))
         self.name_input.setStyleSheet("""
             QLineEdit {
@@ -331,10 +391,10 @@ class HotkeyEditDialog(QDialog):
         self.hotkey_button = HotkeyCaptureButton(self._data.get("hotkey", ""))
         layout.addWidget(self.hotkey_button)
 
-        # 程序路径
-        path_label = QLabel("程序路径")
-        path_label.setStyleSheet("color: #333; font-size: 13px; font-weight: 500;")
-        layout.addWidget(path_label)
+        # 程序路径或命令
+        self.path_label = QLabel("程序路径")
+        self.path_label.setStyleSheet("color: #333; font-size: 13px; font-weight: 500;")
+        layout.addWidget(self.path_label)
 
         path_layout = QHBoxLayout()
         self.path_input = QLineEdit()
@@ -352,9 +412,9 @@ class HotkeyEditDialog(QDialog):
         """)
         path_layout.addWidget(self.path_input, 1)
 
-        browse_btn = QPushButton("浏览...")
-        browse_btn.setFixedSize(80, 34)
-        browse_btn.setStyleSheet("""
+        self.browse_btn = QPushButton("浏览...")
+        self.browse_btn.setFixedSize(80, 34)
+        self.browse_btn.setStyleSheet("""
             QPushButton {
                 background: #f0f0f0;
                 color: #333;
@@ -364,8 +424,8 @@ class HotkeyEditDialog(QDialog):
             }
             QPushButton:hover { background: #e8e8e8; }
         """)
-        browse_btn.clicked.connect(self._browse_file)
-        path_layout.addWidget(browse_btn)
+        self.browse_btn.clicked.connect(self._browse_file)
+        path_layout.addWidget(self.browse_btn)
         layout.addLayout(path_layout)
 
         # 按钮
@@ -404,6 +464,17 @@ class HotkeyEditDialog(QDialog):
         save_btn.setDefault(True)
         btn_layout.addWidget(save_btn)
         layout.addLayout(btn_layout)
+        
+        self._on_type_changed(hotkey_type == "app")
+
+    def _on_type_changed(self, is_app):
+        """类型切换处理"""
+        self.type_app_radio.setChecked(is_app)
+        self.type_command_radio.setChecked(not is_app)
+        is_command = not is_app
+        self.path_label.setText("插件命令" if is_command else "程序路径")
+        self.path_input.setPlaceholderText("输入插件命令，如 clip list" if is_command else "选择程序或文件路径")
+        self.browse_btn.setVisible(not is_command)
 
     def _browse_file(self):
         """浏览选择文件或文件夹"""
@@ -425,21 +496,28 @@ class HotkeyEditDialog(QDialog):
         name = self.name_input.text().strip()
         hotkey = self.hotkey_button.get_hotkey()
         path = self.path_input.text().strip()
+        hotkey_type = "command" if self.type_command_radio.isChecked() else "app"
 
         if not name:
-            QMessageBox.warning(self, "提示", "请输入程序名称")
+            QMessageBox.warning(self, "提示", "请输入显示名称")
             return
         if not hotkey:
             QMessageBox.warning(self, "提示", "请设置热键组合")
             return
-        if not path or not os.path.exists(path):
+        if not path:
+            msg = "请输入插件命令" if hotkey_type == "command" else "请选择有效的程序路径"
+            QMessageBox.warning(self, "提示", msg)
+            return
+        
+        if hotkey_type == "app" and not os.path.exists(path):
             QMessageBox.warning(self, "提示", "请选择有效的程序路径")
             return
 
         self._result = {
             "name": name,
             "hotkey": hotkey,
-            "path": path
+            "path": path,
+            "type": hotkey_type
         }
         self.accept()
 
@@ -590,7 +668,8 @@ class CustomHotkeysDialog(QDialog):
                     success = self.plugin.add_hotkey(
                         result["hotkey"],
                         result["path"],
-                        result["name"]
+                        result["name"],
+                        result.get("type", "app")
                     )
                     if success:
                         self.stats_bar.setText(f"✅ 已添加热键: {result['hotkey']}")
@@ -610,7 +689,8 @@ class CustomHotkeysDialog(QDialog):
                     hotkey_data["hotkey"],
                     result["hotkey"],
                     result["path"],
-                    result["name"]
+                    result["name"],
+                    result.get("type", "app")
                 )
                 if success:
                     self.stats_bar.setText(f"✅ 已更新热键: {result['hotkey']}")

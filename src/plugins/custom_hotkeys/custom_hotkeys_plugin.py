@@ -5,7 +5,13 @@ import os
 import subprocess
 from typing import Any, Dict, List, Optional
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from plugin_base import PluginBase
+
+
+class CommandExecutor(QObject):
+    """用于跨线程执行插件命令的信号发射器"""
+    execute_command = pyqtSignal(str, str, str)
 
 
 class CustomHotkeysPlugin(PluginBase):
@@ -21,6 +27,8 @@ class CustomHotkeysPlugin(PluginBase):
         self._registered_handles = []
         self._keyboard_available = False
         self._dialog = None
+        self._command_executor = CommandExecutor()
+        self._command_executor.execute_command.connect(self._run_command_on_main_thread)
 
         try:
             import keyboard
@@ -92,7 +100,7 @@ class CustomHotkeysPlugin(PluginBase):
                 print(f"[{self.name}] 无法打开对话框：QApplication 未创建")
                 return
 
-            from plugins.custom_hotkeys_dialog import CustomHotkeysDialog
+            from plugins.custom_hotkeys.custom_hotkeys_dialog import CustomHotkeysDialog
 
             if self._dialog is None or not self._dialog.isVisible():
                 self._dialog = CustomHotkeysDialog(self)
@@ -158,8 +166,15 @@ class CustomHotkeysPlugin(PluginBase):
 
     # ── 热键管理 ──────────────────────────────────────────────
 
-    def add_hotkey(self, hotkey: str, app_path: str, app_name: str = "") -> bool:
-        """添加一个热键映射"""
+    def add_hotkey(self, hotkey: str, app_path: str, app_name: str = "", hotkey_type: str = "app") -> bool:
+        """添加一个热键映射
+
+        Args:
+            hotkey: 热键组合
+            app_path: 程序路径或插件命令
+            app_name: 显示名称
+            hotkey_type: 类型，"app" 表示启动程序，"command" 表示执行插件命令
+        """
         if not self._keyboard_available:
             raise RuntimeError("keyboard 模块未安装，请先安装 keyboard 包")
 
@@ -171,7 +186,8 @@ class CustomHotkeysPlugin(PluginBase):
         hotkey_entry = {
             "hotkey": hotkey,
             "path": app_path,
-            "name": app_name or os.path.basename(app_path),
+            "name": app_name or (app_path if hotkey_type == "command" else os.path.basename(app_path)),
+            "type": hotkey_type,
             "enabled": True
         }
         self._hotkeys.append(hotkey_entry)
@@ -194,7 +210,7 @@ class CustomHotkeysPlugin(PluginBase):
                 return True
         return False
 
-    def update_hotkey(self, old_hotkey: str, new_hotkey: str, app_path: str, app_name: str) -> bool:
+    def update_hotkey(self, old_hotkey: str, new_hotkey: str, app_path: str, app_name: str, hotkey_type: str = "app") -> bool:
         """更新热键映射"""
         old_hotkey_lower = old_hotkey.lower()
         for hk in self._hotkeys:
@@ -204,7 +220,8 @@ class CustomHotkeysPlugin(PluginBase):
                 # 更新
                 hk["hotkey"] = new_hotkey
                 hk["path"] = app_path
-                hk["name"] = app_name or os.path.basename(app_path)
+                hk["name"] = app_name or (app_path if hotkey_type == "command" else os.path.basename(app_path))
+                hk["type"] = hotkey_type
                 # 注册新热键
                 self._register_hotkey(hk)
                 self._save_hotkeys_to_file()
@@ -222,12 +239,19 @@ class CustomHotkeysPlugin(PluginBase):
 
         try:
             hotkey = hotkey_entry["hotkey"]
+            hotkey_type = hotkey_entry.get("type", "app")
             app_path = hotkey_entry["path"]
             app_name = hotkey_entry.get("name", os.path.basename(app_path))
 
-            # 创建回调
-            def callback(path=app_path, name=app_name, key=hotkey):
-                self._launch_app(path, name, key)
+            # 根据类型创建不同的回调
+            if hotkey_type == "command":
+                def callback(command=app_path, name=app_name, key=hotkey):
+                    print(f"[CustomHotkeys] command callback triggered: {command}")
+                    self._execute_command(command, name, key)
+            else:
+                def callback(path=app_path, name=app_name, key=hotkey):
+                    print(f"[CustomHotkeys] app callback triggered: {path}")
+                    self._launch_app(path, name, key)
 
             handle = self._keyboard_module.add_hotkey(
                 hotkey,
@@ -236,7 +260,7 @@ class CustomHotkeysPlugin(PluginBase):
                 trigger_on_release=False
             )
             self._registered_handles.append((hotkey_entry, handle))
-            print(f"[CustomHotkeys] 已注册热键: {hotkey} -> {app_path}")
+            print(f"[CustomHotkeys] 已注册热键: {hotkey} -> {app_path} ({hotkey_type})")
         except Exception as e:
             print(f"[CustomHotkeys] 注册热键失败 {hotkey_entry['hotkey']}: {e}")
 
@@ -278,6 +302,38 @@ class CustomHotkeysPlugin(PluginBase):
                 print(f"[CustomHotkeys] 注销热键失败: {e}")
 
         self._registered_handles.clear()
+
+    def _execute_command(self, command: str, command_name: str = "", hotkey: str = "") -> None:
+        """执行插件命令（通过信号发射到主线程执行）"""
+        if not command_name:
+            command_name = command
+        self._command_executor.execute_command.emit(command, command_name, hotkey)
+
+    def _run_command_on_main_thread(self, command: str, command_name: str, hotkey: str) -> None:
+        """在主线程执行插件命令"""
+        try:
+            if hasattr(self, "_plugin_manager"):
+                plugin = self._plugin_manager.route(command)
+                if plugin:
+                    _, args_str = self._plugin_manager.extract_keyword_and_args(command)
+                    self._plugin_manager.handle(plugin, args_str)
+                    
+                    self._send_notification(
+                        f"⌨️ {command_name}",
+                        f"正在通过热键 [{hotkey}] 执行命令..." if hotkey else "正在执行命令..."
+                    )
+                    print(f"[CustomHotkeys] 已执行命令: {command}")
+                else:
+                    self._send_notification(f"❌ {command_name}", "未找到对应的插件", error=True)
+                    print(f"[CustomHotkeys] 未找到插件: {command}")
+            else:
+                self._send_notification(f"❌ {command_name}", "插件管理器不可用", error=True)
+                print(f"[CustomHotkeys] 插件管理器未注入")
+        except Exception as e:
+            self._send_notification(f"❌ {command_name}", f"执行失败: {str(e)}", error=True)
+            print(f"[CustomHotkeys] 执行命令失败 {command}: {e}")
+            import traceback
+            traceback.print_exc()
 
     def _launch_app(self, app_path: str, app_name: str = "", hotkey: str = "") -> None:
         """启动指定程序"""
@@ -372,13 +428,22 @@ class CustomHotkeysPlugin(PluginBase):
         for hk in self._hotkeys:
             name = hk.get("name", "")
             hotkey = hk.get("hotkey", "")
+            hotkey_type = hk.get("type", "app")
             if q in name.lower() or q in hotkey.lower():
+                icon = "⚡" if hotkey_type == "command" else "⌨️"
+                action_desc = f"命令: {hk['path']}" if hotkey_type == "command" else f"路径: {hk['path']}"
+                
+                if hotkey_type == "command":
+                    action = lambda cmd=hk["path"], n=name, h=hotkey: self._execute_command(cmd, n, h)
+                else:
+                    action = lambda p=hk["path"], n=name, h=hotkey: self._launch_app(p, n, h)
+                
                 results.append({
-                    "name": f"⌨️ {name}",
+                    "name": f"{icon} {name}",
                     "path": f"hk:{hotkey}",
-                    "description": f"热键: {hotkey}",
-                    "icon": "⌨️",
-                    "action": lambda p=hk["path"], n=name, h=hotkey: self._launch_app(p, n, h),
+                    "description": f"热键: {hotkey} | {action_desc}",
+                    "icon": icon,
+                    "action": action,
                 })
         return results[:10]
 
@@ -401,14 +466,23 @@ class CustomHotkeysPlugin(PluginBase):
     def _build_results_list(self) -> Dict[str, Any]:
         items = []
         for hk in self._hotkeys:
+            hotkey_type = hk.get("type", "app")
+            icon = "⚡" if hotkey_type == "command" else "⌨️"
+            action_desc = f"命令: {hk['path']}" if hotkey_type == "command" else f"热键: {hk['hotkey']}"
+            
+            if hotkey_type == "command":
+                action = lambda cmd=hk["path"], n=hk["name"], h=hk["hotkey"]: self._execute_command(cmd, n, h)
+            else:
+                action = lambda p=hk["path"], n=hk["name"], h=hk["hotkey"]: self._launch_app(p, n, h)
+            
             items.append({
-                "name": f"⌨️ {hk['name']}",
+                "name": f"{icon} {hk['name']}",
                 "path": f"hk:{hk['hotkey']}",
-                "description": f"热键: {hk['hotkey']}",
+                "description": action_desc,
                 "extension": ".hk",
                 "icon_data": None,
                 "source": "custom_hotkeys",
-                "action": lambda p=hk["path"], n=hk["name"], h=hk["hotkey"]: self._launch_app(p, n, h),
+                "action": action,
             })
 
         if not items:
