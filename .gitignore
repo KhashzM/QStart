@@ -8,3 +8,6 @@ __pycache__/
 venv/ 
 data/
 src/data/clipboard_history.json 
+".vscode/" 
+"data/" 
+"debug/" 
