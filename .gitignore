@@ -1,0 +1,10 @@
+build/ 
+dist/ 
+__pycache__/ 
+*.pyc 
+*.pyo 
+*.pyd 
+.env 
+venv/ 
+data/
+src/data/clipboard_history.json 

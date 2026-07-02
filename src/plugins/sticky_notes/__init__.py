@@ -1,0 +1,1 @@
+from .sticky_notes_plugin import StickyNotesPlugin

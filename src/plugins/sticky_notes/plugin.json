@@ -1,0 +1,14 @@
+{
+    "name": "便签待办",
+    "version": "1.0.0",
+    "description": "桌面便签和待办事项管理插件，支持便签创建、编辑、颜色设置和待办列表管理",
+    "author": "QStart",
+    "main_module": "sticky_notes_plugin.py",
+    "files": [
+        "sticky_notes_plugin.py",
+        "sticky_note_widget.py",
+        "todo_dialog.py",
+        "__init__.py"
+    ],
+    "keywords": ["note", "便签", "todo", "待办"]
+}
